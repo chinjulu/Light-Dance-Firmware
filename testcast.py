@@ -4,6 +4,7 @@ import threading
 import curses  # 用於終端動態刷新
 import sys  # 用於退出程式
 
+
 # 配置廣播和接收訊息的埠
 broadcast_address = "192.168.0.255"  # 根據你的網段調整
 port = 12345  # 廣播埠
