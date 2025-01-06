@@ -74,15 +74,16 @@ def start_action():
     threading.Thread(target=start_function, daemon=True).start()
 
 def start_function():
-    while start_event.is_set():
-        broadcast_message("start")
-        time.sleep(0.001)  # 每 0.001 秒發送一次開始訊號
+    broadcast_message("start")
+    # while start_event.is_set():
+    #     broadcast_message("start")
+    #     time.sleep(0.001)  # 每 0.001 秒發送一次開始訊號
 
-        # 檢查是否所有設備都已回應 "running"
-        all_running = all(device["status"] == "running" for device in devices.values())
-        if all_running:
-            print("All devices have been running.")
-            start_event.clear()
+    #     # 檢查是否所有設備都已回應 "running"
+    #     all_running = all(device.status == "running" for device in devices.values())
+    #     if all_running:
+    #         print("All devices have been running.")
+    #         start_event.clear()
 
 # 發送停止訊號，直到所有設備回應
 def stop_function():
@@ -183,6 +184,7 @@ while running:
     for button in buttons:
         button.draw(screen)
 
+    current_time = time.time()
     # 更新裝置狀態
     y_offset = 50
     for ip, device in devices.items():
@@ -195,7 +197,7 @@ while running:
             if device.last_response_time
             else "Never"
         )
-        if first == 1 or {info['status']} != {'heartbeat received'}:
+        if first == 1 or device.status != {'heartbeat received'}:
             first = 0
             status_text = f"Device ID: {device.device_id}, IP: {device.ip}, Status: {device.status}, Last Seen: {last_seen}"
         
