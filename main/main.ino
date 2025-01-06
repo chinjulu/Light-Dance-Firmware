@@ -26,8 +26,8 @@ WiFiServer server(80);      // 設置 HTTP 伺服器埠
 bool startMainProgram = false;  // 主程式啟動開關
 bool running = false;       // 模擬任務執行狀態
 bool tryToRcv = true;       // 是否嘗試接收檔案
-// const char* deviceId = "test02";
-String deviceId = "test01";     // 裝置名稱
+// String deviceId = "test01";     // 裝置名稱
+String deviceId = "test02";     // 裝置名稱
 
 const int headPin = 2;
 const int shoulderPin = 3;
@@ -291,23 +291,12 @@ void tryRcv() {
 }
 
 void mainProgram() {
-  // 新增：接收 UDP 廣播訊息
-  // char incomingPacket[255];  // 用於存儲接收的廣播消息
-  // int packetSize = udp.parsePacket();
-  // if (packetSize) {
-  //   int len = udp.read(incomingPacket, 255);
-  //   incomingPacket[len] = 0;  // 確保字串以 '\0' 結尾
-  //   String command = String(incomingPacket);
-  //   if (command != "heartbeat") Serial.printf("Received UDP packet: %s\n", command.c_str());
-  //   handleCommand(command);  // 處理接收到的指令
-  // }
-  // String response = deviceId + ": running";
-  // udp.beginPacket(responseAddress, responsePort);
-  // udp.write(response.c_str());
-  // udp.endPacket();
   checkUDP();
   // 照著光表亮
-
+  while(1){
+    digitalWrite(headPin, HIGH);
+    checkUDP();
+  }
 
 
 
