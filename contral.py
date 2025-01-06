@@ -36,6 +36,15 @@ sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 sock.bind(("", response_port))
 exit_event = threading.Event()
 
+# 定義每塊板子的狀態
+class DeviceState:
+    def __init__(self, ip, device_id):
+        self.ip = ip
+        self.device_id = device_id
+        self.last_response_time = None
+        self.status = "Disconnected"  # 初始狀態為未連線
+        self.task_status = "Waiting"  # 初始任務狀態為等待中
+
 # 按鈕類
 class Button:
     def __init__(self, x, y, width, height, color, text, text_color, action):
@@ -75,17 +84,20 @@ def start_function():
             print("All devices have been running.")
             start_event.clear()
 
-def stop_action():
-    stop_event.set()  # 啟用停止事件
-    threading.Thread(target=stop_function, daemon=True).start()
-
+# 發送停止訊號，直到所有設備回應
 def stop_function():
     while stop_event.is_set():
         broadcast_message("stop")
-        time.sleep(0.001)  # 每 0.001 秒發送一次停止訊號
+        time.sleep(0.001)  # 每 1 秒發送一次停止訊號
 
         # 檢查是否所有設備都已回應 "stopped"
-        all_stopped = all(device["status"] == "stopped" for device in devices.values())
+        all_stopped = True
+        for device in devices.values():
+            if device.task_status != "stopped":
+                all_stopped = False
+                break
+
+        # 如果所有設備已停止，結束廣播
         if all_stopped:
             print("All devices have stopped.")
             stop_event.clear()
@@ -132,15 +144,15 @@ def listen_for_responses():
             else:
                 device_id, task_status = "Unknown", message
 
+            # 更新板子狀態
             if device_ip not in devices:
-                devices[device_ip] = {
-                    "id": device_id,
-                    "status": task_status,
-                    "last_seen": time.time()
-                }
-            else:
-                devices[device_ip]["status"] = task_status
-                devices[device_ip]["last_seen"] = time.time()
+                devices[device_ip] = DeviceState(device_ip, device_id)
+            devices[device_ip].last_response_time = time.time()
+            devices[device_ip].status = (
+                "Running" if task_status == "running" else "Connecting"
+            )
+            devices[device_ip].task_status = task_status
+
         except Exception:
             pass
 
@@ -171,14 +183,22 @@ while running:
     for button in buttons:
         button.draw(screen)
 
-    # 顯示設備狀態
+    # 更新裝置狀態
     y_offset = 50
-    for ip, info in devices.items():
-        last_seen = f"{time.time() - info['last_seen']:.1f}s ago"
-        print({info['status']})
+    for ip, device in devices.items():
+        # 判斷連線狀態
+        if device.last_response_time and current_time - device.last_response_time > 0.5:
+            device.status = "Disconnected"
+
+        last_seen = (
+            f"{current_time - device.last_response_time:.1f} seconds ago"
+            if device.last_response_time
+            else "Never"
+        )
         if first == 1 or {info['status']} != {'heartbeat received'}:
             first = 0
-            status_text = f"Device {info['id']} | IP: {ip} | Status: {info['status']} | Last Seen: {last_seen}"
+            status_text = f"Device ID: {device.device_id}, IP: {device.ip}, Status: {device.status}, Last Seen: {last_seen}"
+        
         status_surface = font.render(status_text, True, BLACK)
         screen.blit(status_surface, (50, y_offset))
         y_offset += 30
