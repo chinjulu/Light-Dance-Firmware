@@ -117,7 +117,7 @@ def heartbeat_function():
 # 設置按鈕
 buttons = [
     Button(50, 500, 100, 50, BLUE, "Start", WHITE, start_action),
-    Button(200, 500, 100, 50, RED, "Stop", WHITE, stop_action),
+    Button(200, 500, 100, 50, RED, "Stop", WHITE, stop_function),
     Button(350, 500, 100, 50, GRAY, "Exit", BLACK, exit_action),
 ]
 
