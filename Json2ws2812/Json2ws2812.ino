@@ -121,13 +121,6 @@ void loop() {
     if (millis() - startTime == array[i][0] * 50) {
       for (int j = 0; j < 7; j++) {
         leds[j][0] = CRGB(red(array[i][j + 1]), green(array[i][j + 1]), blue(array[i][j + 1]));
-        Serial.print("Red: ");
-        Serial.println(red(array[i][j + 1]));
-        Serial.print("Green: ");
-        Serial.println(green(array[i][j + 1]));
-        Serial.print("Blue: ");
-        Serial.println(blue(array[i][j + 1]));
-
         leds[j][0].nscale8(bright(array[i][j + 1]));
         // Serial.printf("(%d, %d, %d)", red(array[i][j + 1]), green(array[i][j + 1]), blue(array[i][j + 1]));
       }
